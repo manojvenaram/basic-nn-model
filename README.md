@@ -43,12 +43,19 @@ Plot the performance plot
 Evaluate the model with the testing data.
 
 ## PROGRAM
+### Importing Modules
 ```
 from google.colab import auth
 import gspread
 from google.auth import default
 import pandas as pd
-
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.model_selection import train_test_split
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
+```
+### Authenticate & Create DataFrame using Data in Sheets
+```
 auth.authenticate_user()
 creds, _ = default()
 gc = gspread.authorize(creds)
@@ -58,19 +65,24 @@ rows = worksheet.get_all_values()
 df = pd.DataFrame(rows[1:], columns=rows[0])
 df = df.astype({'Input':'float'})
 df = df.astype({'Output':'float'})
-df.head()
+
+
+```
+### Assign X and Y values
+```
 X=df[['Input']].values
 y=df[['Output']].values
-
-from sklearn.model_selection import train_test_split
+```
+### Normalize the value & split the data
+```
+Scaler=MinMaxScaler()
+Scaler.fit(X)
+X=Scaler.fit_transforms(x)
 X_train,X_test,y_train,y_test=train_test_split(X,y,test_size=0.33,random_state=33)
 
-from sklearn.preprocessing import MinMaxScaler
-Scaler=MinMaxScaler()
-Scaler.fit(X_train)
-
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense
+```
+### Create a Neural Network & Train it
+```
 ai_brain=Sequential([
     Dense(9,activation='relu'),
     Dense(11,activation='relu'),
@@ -83,9 +95,18 @@ ai_brain.compile(
 )
 
 ai_brain.fit(X_train1,y_train,epochs = 3000)
-
+```
+### Plot the Loss
+```
+loss_df = pd.DataFrame(ai_brain.history.history)
+loss_df.plot()
+```
+### Evaluate the model
+```
 ai_brain.evaluate(X_test,y_test)
-
+```
+### Predict the Value
+```
 X_n1 = [[101]]
 
 X_n1_1 = Scaler.transform(X_n1)
